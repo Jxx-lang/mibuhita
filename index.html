@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para ti, mi amor ❤️</title>
+    <style>
+        /* ==================== VARIABLES Y BASE ==================== */
+        :root {
+            --primary-color: #d81b60;
+            --bg-gradient-1: #ffdde1;
+            --bg-gradient-2: #ee9ca7;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #4a154b;
+            --text-muted: #7a3b69;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            color: var(--text-main);
+            transition: background 1.5s ease;
+        }
+
+        body.night-mode { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); }
+        body.night-mode .app-container { background: rgba(255, 255, 255, 0.85); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); }
+
+        /* Estrellas para el Modo Noche */
+        #stars-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; opacity: 0; transition: opacity 1.5s ease;
+        }
+        body.night-mode #stars-container { opacity: 1; }
+        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle infinite alternate; }
+        @keyframes twinkle { from { opacity: 0.2; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+
+        /* ==================== SOBRE 3D DE APERTURA ==================== */
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffe4e1; display: flex; justify-content: center; align-items: center;
+            z-index: 1000; transition: opacity 1s ease; perspective: 1000px;
+        }
+        .envelope-wrapper { position: relative; cursor: pointer; text-align: center; }
+        .envelope {
+            width: 300px; height: 200px; background: #ff9a9e; position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); transition: transform 0.5s;
+        }
+        .envelope:hover { transform: scale(1.05); }
+        .flap {
+            position: absolute; top: 0; left: 0; width: 0; height: 0;
+            border-left: 150px solid transparent; border-right: 150px solid transparent; border-top: 100px solid #ff758c;
+            transform-origin: top; transition: transform 0.6s, z-index 0s 0.6s; z-index: 10;
+        }
+        .envelope-wrapper.open .flap { transform: rotateX(180deg); z-index: 1; }
+        .envelope-text {
+            position: absolute; bottom: 30px; width: 100%; color: white;
+            font-size: 18px; font-weight: bold; font-style: italic; z-index: 11;
+        }
+        .letter-preview {
+            position: absolute; top: 20px; left: 20px; width: 260px; height: 160px;
+            background: white; z-index: 5; transition: transform 0.8s 0.4s ease;
+            display: flex; justify-content: center; align-items: center; font-size: 20px; color: var(--primary-color);
+            font-weight: bold;
+        }
+        .envelope-wrapper.open .letter-preview { transform: translateY(-120px); }
+
+        /* ==================== CONTENEDOR TIPO APP ==================== */
+        .app-container {
+            background: var(--card-bg); backdrop-filter: blur(10px);
+            border-radius: 30px; width: 100%; max-width: 450px; height: 90vh;
+            max-height: 800px; position: relative; z-index: 10;
+            display: none; opacity: 0; transform: translateY(20px);
+            transition: opacity 1s ease, transform 1s ease;
+            overflow: hidden; 
+            box-shadow: 0 15px 35px rgba(216, 27, 96, 0.15);
+        }
+        .app-container.visible { display: flex; flex-direction: column; opacity: 1; transform: translateY(0); }
+
+        /* Cabecera */
+        .app-header { padding: 25px 20px 15px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .app-header h1 { color: var(--primary-color); font-size: 24px; margin-bottom: 5px; }
+        .app-header p { font-size: 13px; color: var(--text-muted); font-style: italic; }
+
+        /* Vistas (Scrollable) */
+        .views-container { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; position: relative; }
+        .views-container::-webkit-scrollbar { width: 0px; }
+        .tab-section { display: none; animation: fadeInView 0.4s ease forwards; }
+        .tab-section.active { display: block; }
+        @keyframes fadeInView { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* ==================== VISTA 1: REFUGIO ==================== */
+        .btn-rain {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef); color: var(--text-main);
+            border: none; width: 100%; padding: 15px; border-radius: 20px; font-size: 15px; font-weight: bold;
+            cursor: pointer; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
+            transition: transform 0.3s;
+        }
+        .btn-rain:active { transform: scale(0.95); }
+
+        .buttons-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 25px; }
+        .btn-emotion {
+            background: white; border: 2px solid #ffb6c1; color: var(--text-main);
+            padding: 12px 10px; border-radius: 20px; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-emotion:active { background: var(--primary-color); color: white; border-color: var(--primary-color); transform: scale(0.95); }
+
+        #message-box {
+            background: white; border-left: 5px solid var(--primary-color);
+            padding: 20px; border-radius: 15px; font-size: 15px; line-height: 1.6;
+            color: var(--primary-color); font-weight: 500; min-height: 80px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: none; margin-bottom: 20px;
+        }
+        #message-box.show { display: block; }
+        .cursor { display: inline-block; width: 3px; background-color: var(--primary-color); margin-left: 2px; animation: blink 0.8s infinite; }
+
+        /* ==================== VISTA 2: HISTORIA (TIMELINE) ==================== */
+        .timeline { position: relative; padding-left: 30px; margin-top: 10px; }
+        .timeline::before {
+            content: ''; position: absolute; left: 7px; top: 0; height: 100%;
+            width: 3px; background: #ffb6c1; border-radius: 3px;
+        }
+        .timeline-item { position: relative; margin-bottom: 30px; }
+        .timeline-dot {
+            position: absolute; left: -30px; top: 5px; width: 17px; height: 17px;
+            background: var(--primary-color); border: 3px solid white;
+            border-radius: 50%; box-shadow: 0 0 0 2px #ffb6c1;
+        }
+        .timeline-date { font-size: 12px; color: var(--primary-color); font-weight: bold; margin-bottom: 5px; }
+        .timeline-content {
+            background: white; padding: 15px; border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ffdde1;
+        }
+        .timeline-content h3 { font-size: 15px; margin-bottom: 5px; color: var(--text-main); }
+        .timeline-content p { font-size: 13px; color: #666; line-height: 1.4; }
+
+        /* ==================== VISTA 3: CUPONES ==================== */
+        .coupons-container { display: flex; flex-direction: column; gap: 15px; }
+        .coupon {
+            background: #fff0f3; border: 2px dashed #ff9a9e; border-radius: 15px;
+            padding: 20px; text-align: center; position: relative; overflow: hidden;
+            transition: 0.3s; cursor: pointer;
+        }
+        .coupon h3 { color: var(--primary-color); font-size: 18px; margin-bottom: 5px; }
+        .coupon p { font-size: 13px; color: var(--text-muted); }
+        .coupon .scissors { position: absolute; top: -10px; left: 10px; font-size: 20px; color: #ff9a9e; }
+        .coupon.redeemed { opacity: 0.6; filter: grayscale(0.5); pointer-events: none; border-color: #ccc; }
+        .coupon.redeemed::after {
+            content: 'CANJEADO'; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            font-size: 24px; font-weight: bold; color: rgba(216, 27, 96, 0.4);
+            border: 3px solid rgba(216, 27, 96, 0.4); padding: 5px 15px; border-radius: 10px;
+        }
+
+        /* ==================== BARRA DE NAVEGACIÓN ==================== */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: white; display: flex; justify-content: space-around;
+            padding: 15px 10px; border-top: 1px solid rgba(0,0,0,0.05);
+            border-radius: 0 0 30px 30px; box-shadow: 0 -5px 20px rgba(0,0,0,0.03);
+            z-index: 20;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            color: #ccc; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.3s;
+        }
+        .nav-item.active { color: var(--primary-color); transform: translateY(-3px); }
+        .nav-icon { font-size: 22px; filter: grayscale(100%) opacity(0.5); transition: 0.3s; }
+        .nav-item.active .nav-icon { filter: grayscale(0%) opacity(1); }
+
+        /* Lluvia de sobres */
+        #rain-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99; }
+        .falling-envelope { position: absolute; top: -50px; font-size: 30px; cursor: pointer; pointer-events: auto; animation: fall linear forwards; transition: transform 0.2s; }
+        .falling-envelope:hover { transform: scale(1.3); }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="stars-container"></div>
+    <div id="rain-container"></div>
+
+    <div id="intro-screen">
+        <div class="envelope-wrapper" onclick="openEnvelope()" id="envelope">
+            <div class="envelope">
+                <div class="flap"></div>
+                <div class="letter-preview">Toca para abrir ❤️</div>
+                <div class="envelope-text">Para el amor de mi vida Buhita</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="main-content">
+        
+        <div class="app-header">
+            <h1>Mi lugar seguro ❤️</h1>
+            <p>BUENOS DIAAAAS PRINCESAAAAAAAAAAAAAAA</p>
+        </div>
+
+        <div class="views-container">
+            
+            <div id="view-refugio" class="tab-section active">
+                <button class="btn-rain" onclick="startRain()">💌 Toca aquí para ver magia</button>
+                
+                <div class="buttons-grid">
+                    <button class="btn-emotion" onclick="showMessage('triste')">😔 Si estás triste</button>
+                    <button class="btn-emotion" onclick="showMessage('enojada')">😡 Si estás enojada</button>
+                    <button class="btn-emotion" onclick="showMessage('cansada')">😴 Si estás cansada</button>
+                    <button class="btn-emotion" onclick="showMessage('amor')">💕 Si quieres amor</button>
+                    <button class="btn-emotion" onclick="showMessage('noche')">🌙 Antes de dormir</button>
+                    <button class="btn-emotion" onclick="showMessage('inseguridades')">🌪️ Si te sientes insegura</button>
+                </div>
+                
+                <div id="message-box"></div>
+            </div>
+
+            <div id="view-historia" class="tab-section">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-date">El comienzo de todo</div>
+                        <div class="timeline-content">
+                            <h3>El día que nos conocimos</h3>
+                            <p>El día que nos conocimos no fue una simple coincidencia fue como si la vida ya estuviera escribiendo nuestra historia mucho antes de que nosotros nos diéramos cuenta. Porque no fue solo una vez coincidimos varias veces, en distintos momentos, como si el destino estuviera insistiendo en cruzarnos, en ponernos en el mismo camino una y otra vez hasta que finalmente algo tenía que pasar entre nosotros y ahora lo pienso y siento que no era casualidad, porque entre tantas personas, entre tantos lugares, entre tantas historias tú y yo nos seguimos encontrando, como si el universo dijera ‘es ella’, y no dejara de ponerte frente a mí hasta que yo lo entendiera, en esos momentos tal vez no sabía lo que venía, no imaginaba que esa persona con la que coincidía iba a convertirse en alguien tan importante para mí en alguien que iba a cambiar mi forma de ver el amor, de sentir, de querer. Pero algo dentro de mí ya sentía que había algo especial, algo distinto aunque no supiera explicarlo.
+Y cada vez que nos volvíamos a ver, era como si algo se encendiera un poco más como si poco a poco nos fuéramos acercando sin darnos cuenta, como si todo estuviera avanzando en silencio, preparándonos para lo que hoy somos, hasta que llegó el momento en el que ya no fue solo coincidir sino quedarnos y desde ese momento todo cambió, porque contigo no se sintió como con nadie más, contigo todo se volvió más real, más fuerte, más bonito como si por fin hubiera encontrado lo que sin saberlo siempre estuve buscando.
+Y ahora entiendo todo entiendo por qué coincidimos tantas veces, por qué la vida insistió tanto porque no eras una persona más, eras tú la persona que iba a enseñarme lo que realmente es amar, lo que es sentirse amado, lo que es tener paz, lo que es tener un hogar en alguien. Porque de todas las historias posibles la mía tenía que cruzarse con la tuya y no fue casualidad fue destino, el mejor destino que me pudo tocar</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-date">Cuando te pedi ser mi flaquillesica</div>
+                        <div class="timeline-content">
+                            <h3>TEAMO</h3>
+                            <p>Literal me acuerdo que estaba todo nervioso, no sabia ni que hacer porque como te dije queria hacerlo especial, y queria hacerlo mejor cuanto te dije para ser pareja no sabia como reaccionarias pero la respuesta me dejo impactado con las flores fue uno de los mejores dias de mi vida porque me aceptaste y ahi fue donde por fin ya pude tener a la mujer que siempre eh querido TU, gracias mi vida</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-date">Presente y Futuro</div>
+                        <div class="timeline-content">
+                            <h3>Donde sea, pero contigo</h3>
+                            <p>No me importa el lugar, ni el momento, ni las circunstancias si estoy contigo, todo se vuelve especial. Puede ser un paseo simple, una conversación cualquiera o incluso el silencio pero contigo todo tiene sentido. Porque no es el lugar lo que importa, eres tú. Contigo aprendí que la felicidad no está en lo que hacemos, sino en con quién lo compartimos. Y si me dieran a elegir mil veces, siempre te elegiría a ti, en cualquier lugar, en cualquier vida porque donde sea, pero contigo, siempre será mi lugar favorito.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-cupones" class="tab-section">
+                <div class="coupons-container">
+                    <p style="text-align: center; font-size: 13px; color: #666; margin-bottom: 10px;">Toca un cupón para canjearlo en la vida real 🎟️</p>
+                    
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Masaje Relajante</h3>
+                        <p>Válido por un masaje en la espalda y mimos hasta que te quedes dormida.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Paseo Nocturno</h3>
+                        <p>Válido por un paseo de noche por todo Nasca escuchando nuestra música favorita.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Noche de Películas</h3>
+                        <p>Válido por elegir películas, snacks y pasar una noche juntos sin preocupaciones.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Día Sin Preocupaciones</h3>
+                        <p>Válido por un día donde yo me encargo de todo para que tú solo disfrutes y descanses.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Abrazo Infinito</h3>
+                        <p>Válido por un abrazo largo que te haga sentir segura y en paz.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Noche de Conversación</h3>
+                        <p>Válido por una noche donde solo hablamos, nos escuchamos y conectamos.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Cumplo Tu Antojo</h3>
+                        <p>Válido para ir por eso que tanto se te antoja, sin excusas.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Escape Improvisado</h3>
+                        <p>Válido por una salida improvisada a donde tú quieras ir.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Olvidemos la Pelea</h3>
+                        <p>Válido para dejar atrás cualquier discusión y volver a empezar con amor.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Perdón con Amor</h3>
+                        <p>Válido por una disculpa sincera acompañada de abrazos y besitos.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Reiniciar Nuestro Amor</h3>
+                        <p>Válido para comenzar de nuevo con más amor y menos orgullo.</p>
+                    </div>
+
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Cena Especial</h3>
+                        <p>Yo invito la comida que tú quieras hoy (¡sin quejas ni peros!).</p>
+                    </div>
+                    
+                    <div class="coupon" onclick="redeemCoupon(this)">
+                        <div class="scissors">✂️</div>
+                        <h3>Abrazos Infinitos</h3>
+                        <p>Válido para usar en medio de una pelea o un mal día para detener el tiempo.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('refugio', this)">
+                <span class="nav-icon">🏠</span>
+                <span>Refugio</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('historia', this)">
+                <span class="nav-icon">📖</span>
+                <span>Historia</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('cupones', this)">
+                <span class="nav-icon">🎟️</span>
+                <span>Cupones</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ==================== APERTURA ==================== */
+        function openEnvelope() {
+            document.getElementById('envelope').classList.add('open');
+            setTimeout(() => {
+                document.getElementById('intro-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('intro-screen').style.display = 'none';
+                    document.getElementById('main-content').classList.add('visible');
+                    generateStars();
+                }, 1000);
+            }, 1200);
+        }
+
+        /* ==================== NAVEGACIÓN ENTRE TABS ==================== */
+        function switchTab(tabId, navElement) {
+            document.querySelectorAll('.tab-section').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            
+            document.getElementById('view-' + tabId).classList.add('active');
+            navElement.classList.add('active');
+
+            if(tabId !== 'refugio') { document.body.classList.remove('night-mode'); }
+        }
+
+        /* ==================== BASE DE DATOS DE MENSAJES (AMPLIADA) ==================== */
+        const messages = {
+            triste: [
+                "Amor, si estás triste ven, aquí estoy para ti ❤️",
+"No estás sola, incluso en tus momentos más difíciles ",
+"Todo va a estar bien, te lo prometo 💕",
+"Si estás mal, quiero ser tu lugar seguro ",
+"Puedes llorar, está bien yo estoy contigo 💖",
+"No tienes que ser fuerte todo el tiempo ❤️",
+"Tu tristeza también merece ser escuchada ",
+"Ven, te abrazo aunque sea a la distancia 💕",
+"Estoy aquí para ti, sin importar qué pase ",
+"No tienes que pasar esto sola 💖",
+"Respira poco a poco todo se va a acomodar ❤️",
+"Si te sientes mal, déjame acompañarte ",
+"Eres más fuerte de lo que crees 💕",
+"Aunque hoy no sea un buen día, mañana puede ser mejor ",
+"Estoy contigo incluso cuando no sabes qué decir 💖",
+"Tu tristeza no define lo increíble que eres ❤️",
+"No pasa nada si hoy no estás bien ",
+"Te entiendo, y aquí estoy para ti 💕",
+"No quiero que cargues con todo sola ",
+"Déjame ser tu apoyo en este momento 💖",
+"Si necesitas llorar, hazlo yo te cuido ❤️",
+"Todo lo que sientes es válido ",
+"Eres muy valiosa, incluso cuando te sientes mal 💕",
+"Estoy aquí para abrazarte con palabras ",
+"No tienes que fingir estar bien 💖",
+"Si estás triste, quédate aquí conmigo ❤️",
+"Tu corazón merece descanso ",
+"Todo va a pasar, incluso este momento 💕",
+"Eres fuerte, incluso cuando lloras ",
+"Te quiero incluso en tus días más difíciles 💖",
+"No estás sola en esto ❤️",
+"Si el mundo pesa, apóyate en mí ",
+"Estoy contigo, siempre 💕",
+"No dejes que este momento te haga olvidar lo increíble que eres ",
+"Eres importante, incluso cuando estás triste 💖",
+"Aquí tienes un lugar donde puedes sentirte segura ❤️",
+"Si estás mal, yo me quedo contigo ",
+"No tienes que poder con todo 💕",
+"Todo mejora, aunque ahora no lo parezca ",
+"Te abrazo con todo mi amor 💖"
+
+            ],
+            enojada: [
+                "Respira mi amor, todo va a calmarse… yo estoy contigo ❤️",
+"No importa lo que pase, yo sigo aquí para ti ",
+"Tu enojo es válido, pero no estás sola 💕",
+"Ven, respira un poco… todo va a estar bien ",
+"Estoy aquí para escucharte, sin juzgarte 💖",
+"No tienes que cargar con todo, puedes apoyarte en mí ❤️",
+"Si algo te duele, quiero entenderlo contigo ",
+"Respira profundo, yo te abrazo en silencio 💕",
+"No dejes que el enojo te quite la paz que mereces ",
+"Eres más fuerte que cualquier momento difícil 💖",
+"Estoy contigo incluso en tus días más intensos ❤️",
+"No quiero que sufras, quiero cuidarte ",
+"Tu tranquilidad es importante, no la pierdas 💕",
+"Aquí estoy, para ti, siempre ",
+"No tienes que enfrentarlo todo sola 💖",
+"Respira mi amor, todo pasa ❤️",
+"Tu paz es más importante que cualquier problema ",
+"Permítete calmarte, yo te acompaño 💕",
+"Eres demasiado valiosa para quedarte con ese enojo ",
+"Estoy aquí para darte calma, no más estrés 💖",
+"Si necesitas espacio, lo entiendo… pero sigo aquí ❤️",
+"No quiero discutir, quiero que estés bien ",
+"Todo se puede resolver con calma 💕",
+"Eres fuerte, pero también mereces paz ",
+"Respira… yo estoy contigo 💖",
+"No tienes que responder ahora, puedes tomarte tu tiempo ❤️",
+"Lo importante es que estés tranquila ",
+"Tu bienestar es lo que más me importa 💕",
+"No dejes que este momento defina tu día ",
+"Eres paz, incluso cuando estás enojada 💖",
+"Aquí estoy para ti, sin importar nada ❤️",
+"Respira, todo se va a acomodar ",
+"Confía en que todo va a mejorar 💕",
+"No estás sola en esto ",
+"Estoy contigo, siempre 💖",
+"Tu tranquilidad vale más que cualquier discusión ❤️",
+"Todo pasa, incluso este momento ",
+"Te mereces calma, no estrés 💕",
+"Respira profundo, estoy contigo ",
+"Te amo incluso en tus momentos difíciles 💖"
+
+            ],
+            cansada: [
+                "Descansa mi amor, te lo mereces por todo lo que haces cada día ❤️",
+"No tienes que poder con todo, también puedes descansar ",
+"Estoy orgulloso de ti, incluso cuando estás cansada 💕",
+"Respira un momento, todo va a estar bien ",
+"Eres fuerte, pero también necesitas cuidarte 💖",
+"Descansa tranquila, yo estoy contigo ❤️",
+"No te exijas tanto, ya estás haciendo demasiado ",
+"Permítete parar un momento, te lo mereces 💕",
+"Eres increíble, incluso en tus días más cansados ",
+"Si necesitas descansar, hazlo… el mundo puede esperar 💖",
+"Ven aquí, yo te cuido ❤️",
+"No tienes que ser fuerte todo el tiempo ",
+"Descansa mi vida, mañana será otro día 💕",
+"Eres suficiente, incluso cuando no tienes energía ",
+"Estoy contigo incluso en tus momentos de cansancio 💖",
+"No te preocupes por todo hoy, descansa un poco ❤️",
+"Tu esfuerzo vale mucho, aunque estés agotada ",
+"Tómate un respiro, te lo mereces 💕",
+"Eres muy fuerte, pero también muy humana ",
+"No tienes que hacerlo todo perfecto 💖",
+"Si hoy no puedes más, está bien ❤️",
+"Descansa, tu cuerpo y tu mente lo necesitan ",
+"Estoy orgulloso de todo lo que haces 💕",
+"Date un momento para ti, lo necesitas ",
+"Eres valiosa incluso cuando estás cansada 💖",
+"No te sientas mal por descansar ❤️",
+"Yo estoy aquí para apoyarte siempre ",
+"Todo va a estar bien, poco a poco 💕",
+"Respira profundo, estás haciendo lo mejor que puedes ",
+"Eres increíble, incluso en tus días difíciles 💖",
+"No tienes que cargar con todo sola ❤️",
+"Descansa mi amor, te lo mereces todo ",
+"Está bien si hoy no fue tu mejor día 💕",
+"Mañana será mejor, confía ",
+"Eres más fuerte de lo que crees 💖",
+"No te olvides de cuidar de ti ❤️",
+"Estoy aquí para ti, siempre ",
+"Date un descanso, lo necesitas 💕",
+"Eres valiosa incluso cuando estás agotada ",
+"Te admiro mucho, incluso cuando estás cansada 💖"
+
+            ],
+            amor: [
+                "Ven aquí mi amor te lleno de todo el amor que tengo para ti ❤️",
+"Te amo más de lo que puedo explicar con palabras ",
+"Eres lo mejor que me ha pasado en la vida 💕",
+"Gracias por existir y por dejarme amarte ❤️",
+"Mi amor por ti crece cada día más 💖",
+"Eres mi lugar favorito en todo este mundo ",
+"Amarte es lo más bonito que me ha pasado ",
+"Contigo entendí lo que realmente es amar ❤️",
+"Eres mi paz, mi alegría y mi todo 💕",
+"No sabes lo feliz que me haces solo con existir 💖",
+"A tu lado todo es más bonito ",
+"Te amo con todo mi corazón, sin límites ",
+"Eres mi persona favorita en el mundo ❤️",
+"No cambiaría estar contigo por nada 💕",
+"Eres el amor que siempre soñé 💖",
+"Mi lugar seguro siempre será contigo ",
+"Te amo en tus días buenos y en los no tan buenos ",
+"Eres todo lo que necesito para ser feliz ❤️",
+"Amarte es lo más fácil del mundo 💕",
+"Eres mi felicidad diaria 💖",
+"No hay un solo día en el que no te piense ",
+"Eres mi motivo para sonreír ",
+"Te amo más de lo que ayer imaginé ❤️",
+"Eres lo más bonito que tengo 💕",
+"Mi corazón es completamente tuyo 💖",
+"Siempre voy a elegirte a ti ",
+"Eres mi todo, sin exagerar ",
+"Contigo quiero todo ❤️",
+"Eres el amor de mi vida 💕",
+"No hay nadie como tú en este mundo 💖",
+"Eres mi sueño hecho realidad ",
+"Te amo más de lo que puedo demostrar ",
+"Quiero amarte todos los días ❤️",
+"Eres lo que siempre busqué 💕",
+"Mi felicidad tiene tu nombre 💖",
+"Te amo con cada parte de mí ",
+"Eres lo mejor que me pasó ",
+"Mi corazón late por ti ❤️",
+"Eres mi razón para amar 💕",
+"Siempre serás mi persona favorita 💖"
+
+            ],
+            noche: [
+                "Duerme bien mi amor, mañana será un día bonito para nosotros 🌙❤️",
+"Cierra los ojos tranquila, yo estoy contigo incluso en tus sueños ",
+"Descansa mi vida, te mereces paz después de todo tu día 💕",
+"Que tengas sueños lindos… ojalá sueñes conmigo 😘",
+"Duerme con la tranquilidad de que alguien te ama profundamente ❤️",
+"Aunque no esté contigo ahora, mi amor te abraza mientras duermes ",
+"Buenas noches mi amor, que descanses y sueñes bonito 💖",
+"Relájate, respira y deja que el sueño te cuide 🌙",
+"Eres lo último que pienso antes de dormir y lo primero al despertar ",
+"Duerme tranquila, todo estará bien, te lo prometo ❤️",
+"Que la noche te regale descanso y sueños hermosos 💕",
+"Si pudiera, te abrazaría toda la noche ",
+"Descansa mi amor, mañana será mejor 🌙",
+"Duerme sabiendo que eres lo más bonito que tengo ❤️",
+"Cierra los ojos y siente mi amor contigo 💖",
+"Que tengas la noche más tranquila del mundo ",
+"Duerme bien mi vida, te lo mereces todo 💕",
+"Estoy pensando en ti antes de dormir ❤️",
+"Que cada sueño te recuerde lo especial que eres ",
+"Buenas noches, mi amor… siempre estoy contigo 🌙",
+"Descansa, yo cuidaré de ti incluso en silencio 💖",
+"Duerme tranquila, mañana te daré más amor ",
+"Que tu noche sea tan hermosa como tú ❤️",
+"Te mando un abrazo en cada sueño 💕",
+"Que esta noche te llene de paz ",
+"Duerme mi amor, todo estará bien 🌙",
+"Si tienes frío, imagina que te estoy abrazando ❤️",
+"Que tus sueños estén llenos de felicidad 💖",
+"Duerme tranquila, yo estoy aquí para ti ",
+"Que la noche te regale descanso y calma 💕",
+"Eres mi último pensamiento antes de dormir ",
+"Duerme bien, mi amor… te amo demasiado ❤️",
+"Que tengas dulces sueños, mi vida 💖",
+"Cierra los ojos y siente cuánto te amo ",
+"Duerme con paz, yo estoy contigo 💕",
+"Descansa mi amor, mañana seguimos escribiendo nuestra historia ",
+"Que esta noche te envuelva en tranquilidad 🌙",
+"Buenas noches, mi corazón… siempre contigo ❤️",
+"Duerme sabiendo que eres todo para mí 💖",
+"Te amo… incluso mientras duermes "
+
+            ],
+            inseguridades: [
+                "No tienes idea de lo valiosa y maravillosa que eres, pero yo sí ❤️",
+"No cambiaría absolutamente nada de ti, porque me enamoré de todo lo que eres 💕",
+"Eres suficiente, incluso en los días donde sientes que no lo eres ",
+"Si algún día dudas de ti, ven conmigo… yo te voy a recordar lo increíble que eres ",
+"No necesitas ser perfecta, porque ya eres perfecta para mí ❤️",
+"Tu forma de ser es lo que más amo, nunca dejes de ser tú 💖",
+"Aunque tú no lo veas, yo veo una persona increíble en ti todos los días 🌸",
+"No te compares con nadie, porque nadie es como tú… y eso es lo que te hace especial 💕",
+"Eres única, irreemplazable y maravillosa tal como eres ❤️",
+"Si pudieras verte con mis ojos… entenderías por qué te amo tanto ",
+"No dejes que tus inseguridades apaguen la luz tan bonita que tienes 💖",
+"Eres mucho más fuerte de lo que crees, y mucho más valiosa de lo que imaginas ",
+"Amo cada parte de ti, incluso las que tú dudas 💕",
+"Tu corazón es hermoso, y eso es lo que realmente importa ❤️",
+"Eres suficiente para mí, hoy, mañana y siempre ",
+"No hay nadie en este mundo que pueda reemplazar lo que eres para mí 💖",
+"Amo tu forma de ser, tu forma de sentir, tu forma de amar ",
+"No tienes que cambiar nada para que yo te ame más, porque ya te amo completamente 💕",
+"Eres todo lo que alguien podría desear y más ❤️",
+"Si algún día te sientes poco, recuerda que para mí eres todo ",
+"Eres hermosa, por dentro y por fuera, aunque a veces no lo veas 💖",
+"No hay defectos en ti, solo cosas que te hacen única ",
+"Amo incluso tus inseguridades, porque son parte de ti 💕",
+"Eres una persona increíble, incluso en tus peores días ❤️",
+"No dejes que tu mente te haga creer cosas que no son verdad ",
+"Eres mucho más de lo que crees ser 💖",
+"Tu valor no depende de lo que pienses de ti, porque para mí ya vales todo ",
+"No necesitas la aprobación de nadie, porque ya eres suficiente 💕",
+"Eres especial simplemente por ser tú ❤️",
+"Tu sonrisa tiene algo que ilumina todo ",
+"Amo cada detalle de ti, incluso los que tú no ves 💖",
+"Eres importante, valiosa y necesaria en este mundo ",
+"Nunca olvides lo increíble que eres, incluso cuando te sientas perdida 💕",
+"Eres una persona que merece todo lo bonito de la vida ❤️",
+"Si supieras lo mucho que significas para mí, no dudarías tanto ",
+"No hay nadie como tú, y eso es lo que te hace tan especial 💖",
+"Eres más que suficiente, incluso cuando no lo sientes ",
+"Amo la persona que eres, sin condiciones 💕",
+"Eres lo más bonito que tengo en mi vida ❤️",
+"Nunca dudes de tu valor, porque para mí eres todo "
+
+            ]
+        };
+
+        const reasonsList = [
+            "Amo tu sonrisa, ilumina mis días enteros.",
+            "Amo lo valiente y fuerte que eres, aunque a veces no te des cuenta.",
+            "Me encanta la inmensa paz que me transmites.",
+            "Amo cada pequeño detalle de ti, desde tu voz hasta tu forma de pensar.",
+            "Amo cómo me miras, me haces sentir que soy el único en el mundo.",
+            "Amo que me apoyes y creas en mí siempre.",
+            "Amo nuestras charlas interminables y también nuestros silencios cómodos."
+        ];
+
+        /* ==================== FUNCIONALIDAD DE ESCRITURA Y AZAR ==================== */
+        let typeInterval;
+        function typeWriter(text) {
+            const messageBox = document.getElementById('message-box');
+            messageBox.classList.add('show');
+            messageBox.innerHTML = '<span id="text-content"></span><span class="cursor">|</span>';
+            const textContent = document.getElementById('text-content');
+            clearInterval(typeInterval);
+            let i = 0;
+            typeInterval = setInterval(() => {
+                textContent.innerHTML += text.charAt(i);
+                i++;
+                if (i >= text.length) clearInterval(typeInterval);
+            }, 40); // Velocidad de la máquina de escribir
+        }
+
+        function showMessage(category) {
+            // Fondo estrellado solo si es de noche
+            if (category === 'noche') { document.body.classList.add('night-mode'); } 
+            else { document.body.classList.remove('night-mode'); }
+            
+            // Selección aleatoria usando Math.random() para que siempre cambie
+            const phraseArray = messages[category];
+            const randomIndex = Math.floor(Math.random() * phraseArray.length);
+            const randomMessage = phraseArray[randomIndex];
+            
+            typeWriter(`"${randomMessage}"`);
+        }
+
+        /* ==================== ESTRELLAS Y LLUVIA ==================== */
+        function generateStars() {
+            const starsContainer = document.getElementById('stars-container');
+            for (let i = 0; i < 40; i++) {
+                let star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.animationDuration = Math.random() * 2 + 1 + 's';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        function startRain() {
+            const container = document.getElementById('rain-container');
+            container.innerHTML = ''; 
+            document.body.classList.remove('night-mode');
+            
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const envelope = document.createElement('div');
+                    envelope.className = 'falling-envelope';
+                    envelope.innerText = '💌';
+                    envelope.style.left = Math.random() * 90 + 'vw';
+                    envelope.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                    
+                    envelope.onclick = function() {
+                        container.innerHTML = ''; // Limpiar la lluvia al atrapar uno
+                        const randomReason = reasonsList[Math.floor(Math.random() * reasonsList.length)];
+                        typeWriter(`Tú: "¿Por qué me amas?"\nYo: "${randomReason}" ❤️`);
+                    };
+                    
+                    container.appendChild(envelope);
+                    setTimeout(() => envelope.remove(), 7000); // Se borra al caer
+                }, i * 300); // Caen uno tras otro
+            }
+        }
+
+        /* ==================== FUNCIONALIDAD CUPONES ==================== */
+        function redeemCoupon(element) {
+            if(!element.classList.contains('redeemed')) {
+                // Vibración si el celular lo soporta
+                if(navigator.vibrate) navigator.vibrate(50); 
+                
+                element.classList.add('redeemed');
+                alert("¡Cupón canjeado con éxito! Tómale captura y mándamela para hacerlo válido hoy mismo ❤️");
+            }
+        }
+    </script>
+</body>
+</html>
